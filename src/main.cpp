@@ -1,10 +1,12 @@
 #include "file_management.h"
+#include "colisiones.h"
 #include <string>
 #include <spdlog/spdlog.h>
 #include <tuple>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <random>
+#include <glm/vec2.hpp>
 
 struct Megaman
 {
@@ -12,10 +14,11 @@ struct Megaman
     float posY;
     float velocidadX;
     float velocidadY;
+    Rectangulo box;
     SDL_Texture* textura;
 };
 
-std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture* textura)
+std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture* textura, float ancho, float alto)
 {
     std::random_device rd; // A non-deterministic seed source
     std::mt19937 gen(rd()); // The random number engine
@@ -37,6 +40,13 @@ std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture* textura)
             y,
             vx,
             vy,
+            { 
+                {ancho, alto},
+                {
+                    x + ancho / 2.f,
+                    y + alto / 2.f
+                }
+            },
             textura
         };
         listadoMegamans.push_back(m);
@@ -44,6 +54,30 @@ std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture* textura)
     }
 
     return listadoMegamans;
+}
+
+void VerificarColisiones(std::vector<Megaman>& listaMegamans)
+{
+    for (size_t i = 0; i < listaMegamans.size(); ++i)
+    {
+        Megaman& a = listaMegamans[i];
+
+        for (size_t j = i + 1; j < listaMegamans.size(); ++j)
+        {
+            Megaman& b = listaMegamans[j];
+
+            //spdlog::info("Hubo colision: A({},{}) B({},{})", 
+            //        a.box.centerPosition.x, a.box.centerPosition.y, b.box.centerPosition.x, b.box.centerPosition.y);
+            
+            if (ColisionRectangular(a.box, b.box))
+            {
+                a.velocidadX *= -1;
+                a.velocidadY *= -1;
+                b.velocidadX *= -1;
+                b.velocidadY *= -1;
+            }
+        }
+    }
 }
 
 int main()
@@ -55,6 +89,8 @@ int main()
     }
     const int cantidad = std::get<0>(data);
     const std::string rutaImagen = std::get<1>(data);
+    float ancho = std::get<2>(data);
+    float alto = std::get<3>(data);
 
     //spdlog::info("Cantidad: {}", std::get<0>(data));
     //spdlog::info("Ubicacion Imagen: {}", std::get<1>(data));
@@ -95,7 +131,7 @@ int main()
     SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, megamanSurface);
     SDL_DestroySurface(megamanSurface);
 
-    auto listadoMegamans = SpawnearMegamans(cantidad,texture);
+    auto listadoMegamans = SpawnearMegamans(cantidad,texture, ancho, alto);
 
     bool isRunning = true;
     auto millisecsPreviousFrame = SDL_GetTicks();
@@ -137,7 +173,12 @@ int main()
             }
             m.posX += m.velocidadX*deltatime;
             m.posY += m.velocidadY*deltatime;
+            m.box.centerPosition.x += m.velocidadX*deltatime;
+            m.box.centerPosition.y += m.velocidadY*deltatime;
         }
+
+        VerificarColisiones(listadoMegamans);
+
         millisecsPreviousFrame = SDL_GetTicks();
 
         // Renderer
@@ -149,9 +190,11 @@ int main()
             SDL_FRect megamanRect = { 
                 m.posX, 
                 m.posY, 
-                30.f, 
-                34.f 
+                m.box.anchoAlto.x, 
+                m.box.anchoAlto.y 
             };
+            SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 255);
+            SDL_RenderRect(m_Renderer, &megamanRect);
             SDL_RenderTexture(m_Renderer, texture, nullptr, &megamanRect);
         }
 

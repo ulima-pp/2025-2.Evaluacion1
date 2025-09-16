@@ -6,4 +6,4 @@
 #include <fstream>
 
 
-std::tuple<int, std::string> ReadFromConfigFile(const std::string& file);
+std::tuple<int, std::string, float, float> ReadFromConfigFile(const std::string& file);

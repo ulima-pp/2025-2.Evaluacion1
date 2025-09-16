@@ -1,8 +1,8 @@
-all: build_main build_file_management link
+all: build_main build_file_management build_colisiones link
 
 build_main:
 	g++ -c ./src/main.cpp \
-		-Iexternal/spdlog/include -Iexternal/nlohmann_json/include \
+		-Iexternal/spdlog/include -Iexternal/nlohmann_json/include -Iexternal/GLM/include \
 		-Iexternal/SDL3/include \
 		-Iexternal/SDL3_Image/include \
 		-o ./bin/main.o
@@ -12,8 +12,13 @@ build_file_management:
 		-Iexternal/spdlog/include -Iexternal/nlohmann_json/include \
 		-o ./bin/file_management.o
 
-link: ./bin/file_management.o ./bin/main.o
-	g++ ./bin/file_management.o ./bin/main.o \
+build_colisiones:
+	g++ -c ./src/colisiones.cpp \
+		-Iexternal/GLM/include \
+		-o ./bin/colisiones.o
+
+link: ./bin/file_management.o ./bin/colisiones.o ./bin/main.o
+	g++ ./bin/file_management.o ./bin/colisiones.o ./bin/main.o \
 		-Lexternal/SDL3/lib \
 		-Lexternal/SDL3_Image/lib \
 		-lSDL3 -lSDL3_image -lwinmm -limm32 -lversion -lole32 -loleaut32 \

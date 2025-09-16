@@ -1,4 +1,6 @@
 {
-  "cantidad" : 6,
-  "ubicacion_imagen" : "./assets/megaman.png"
+  "cantidad" : 100,
+  "ubicacion_imagen" : "./assets/megaman.png",
+  "ancho" : 30,
+  "alto" : 34
 }
