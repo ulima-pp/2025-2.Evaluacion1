@@ -1,11 +1,22 @@
-all: build_main build_file_management build_colisiones link
+all: build_main build_game build_file_management build_colisiones link
 
 build_main:
 	g++ -c ./src/main.cpp \
-		-Iexternal/spdlog/include -Iexternal/nlohmann_json/include -Iexternal/GLM/include \
-		-Iexternal/SDL3/include \
+		-Iexternal/spdlog/include \
+		-Iexternal/nlohmann_json/include \
+		-Iexternal/GLM/include \
+		-I./external/SDL3/include \
 		-Iexternal/SDL3_Image/include \
 		-o ./bin/main.o
+
+build_game:
+	g++ -c ./src/game.cpp \
+		-Iexternal/spdlog/include \
+		-Iexternal/nlohmann_json/include \
+		-Iexternal/GLM/include \
+		-Iexternal/SDL3/include \
+		-Iexternal/SDL3_Image/include \
+		-o ./bin/game.o
 
 build_file_management:
 	g++ -c ./src/file_management.cpp \
@@ -17,8 +28,8 @@ build_colisiones:
 		-Iexternal/GLM/include \
 		-o ./bin/colisiones.o
 
-link: ./bin/file_management.o ./bin/colisiones.o ./bin/main.o
-	g++ ./bin/file_management.o ./bin/colisiones.o ./bin/main.o \
+link:
+	g++ ./bin/file_management.o ./bin/colisiones.o ./bin/game.o ./bin/main.o \
 		-Lexternal/SDL3/lib \
 		-Lexternal/SDL3_Image/lib \
 		-lSDL3 -lSDL3_image -lwinmm -limm32 -lversion -lole32 -loleaut32 \
