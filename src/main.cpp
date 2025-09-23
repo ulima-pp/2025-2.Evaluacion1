@@ -82,54 +82,11 @@ void VerificarColisiones(std::vector<Megaman>& listaMegamans)
 
 int main()
 {
-    auto data = ReadFromConfigFile("./assets/data.json");
-    if (std::get<0>(data) == 0)
-    {
-        return 1;
-    }
-    const int cantidad = std::get<0>(data);
-    const std::string rutaImagen = std::get<1>(data);
-    float ancho = std::get<2>(data);
-    float alto = std::get<3>(data);
+    
 
     //spdlog::info("Cantidad: {}", std::get<0>(data));
     //spdlog::info("Ubicacion Imagen: {}", std::get<1>(data));
-    if (!SDL_Init(SDL_INIT_VIDEO))
-    {
-        spdlog::error("Error initializing SDL. ");
-        return -1;
-    }
-
-    SDL_Window* m_Window = SDL_CreateWindow(
-        nullptr, 
-        800,
-        600,
-        SDL_WINDOW_BORDERLESS
-    );
-
-    if (!m_Window)
-    {
-        spdlog::error("Error creating SDL window.");
-        return -1;
-    }
-
-    SDL_Renderer* m_Renderer = SDL_CreateRenderer(m_Window, nullptr);
-    if (!m_Renderer)
-    {
-        spdlog::error("Error creating Renderer window.");
-        return -1;
-    }
-
-    SDL_SetWindowFullscreen(m_Window, true);
-
-    SDL_Surface* megamanSurface = IMG_Load(rutaImagen.c_str());
-    if (megamanSurface == nullptr)
-    {
-        spdlog::error("Error loading image.");
-        return -2;
-    }
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, megamanSurface);
-    SDL_DestroySurface(megamanSurface);
+    
 
     auto listadoMegamans = SpawnearMegamans(cantidad,texture, ancho, alto);
 
