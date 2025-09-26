@@ -10,6 +10,16 @@
 #include "file_management.h"
 #include "colisiones.h"
 
+struct Megaman
+{
+    float posX;
+    float posY;
+    float velocidadX;
+    float velocidadY;
+    Rectangulo box;
+    SDL_Texture *textura;
+};
+
 class Game
 {
     private:
@@ -20,12 +30,15 @@ class Game
         std::string m_RutaImagen;
         float m_Ancho;
         float m_Alto;
+        bool m_IsRunning;
+        std::vector<Megaman> m_ListadoMegamans;
         
         void ProcessInput();
-        void Update();
+        void Update(float deltatime);
         void Render();
 
     public:
+        Game();
         bool Initialize();
         void Run();
 };

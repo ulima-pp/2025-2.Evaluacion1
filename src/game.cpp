@@ -1,18 +1,8 @@
 #include "game.h"
 
-struct Megaman
+std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture *textura, float ancho, float alto)
 {
-    float posX;
-    float posY;
-    float velocidadX;
-    float velocidadY;
-    Rectangulo box;
-    SDL_Texture* textura;
-};
-
-std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture* textura, float ancho, float alto)
-{
-    std::random_device rd; // A non-deterministic seed source
+    std::random_device rd;  // A non-deterministic seed source
     std::mt19937 gen(rd()); // The random number engine
 
     std::uniform_real_distribution<float> randomPositionX(0.f, 800.f);
@@ -21,7 +11,7 @@ std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture* textura, float 
     std::uniform_real_distribution<float> randomVelocityY(-100.f, 100.f);
 
     std::vector<Megaman> listadoMegamans{};
-    for (int i=0; i < cantidad; i++)
+    for (int i = 0; i < cantidad; i++)
     {
         float x = randomPositionX(gen);
         float y = randomPositionY(gen);
@@ -32,34 +22,30 @@ std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture* textura, float 
             y,
             vx,
             vy,
-            { 
-                {ancho, alto},
-                {
-                    x + ancho / 2.f,
-                    y + alto / 2.f
-                }
-            },
-            textura
-        };
+            {{ancho, alto},
+             {x + ancho / 2.f,
+              y + alto / 2.f}},
+            textura};
         listadoMegamans.push_back(m);
-        //listadoMegamans.emplace_back(x, y, vx, vy, textura);
+        // listadoMegamans.emplace_back(x, y, vx, vy, textura);
     }
 
     return listadoMegamans;
 }
 
-void VerificarColisiones(std::vector<Megaman>& listaMegamans)
+void VerificarColisiones(std::vector<Megaman> &listaMegamans)
 {
     for (size_t i = 0; i < listaMegamans.size(); ++i)
     {
-        Megaman& a = listaMegamans[i];
+        Megaman &a = listaMegamans[i];
 
         for (size_t j = i + 1; j < listaMegamans.size(); ++j)
         {
-            Megaman& b = listaMegamans[j];
+            Megaman &b = listaMegamans[j];
 
-            //spdlog::info("Hubo colision: A({},{}) B({},{})", 
-            //        a.box.centerPosition.x, a.box.centerPosition.y, b.box.centerPosition.x, b.box.centerPosition.y);
+            // spdlog::info("Hubo colision: A({},{}) B({},{})",
+            //         a.box.centerPosition.x, a.box.centerPosition.y, b.box.centerPosition.x, b.box.centerPosition.y);
+
             
             if (ColisionRectangular(a.box, b.box))
             {
@@ -71,6 +57,14 @@ void VerificarColisiones(std::vector<Megaman>& listaMegamans)
         }
     }
 }
+
+Game::Game()
+    : m_Window(nullptr), m_Renderer(nullptr),
+      m_Texture(nullptr), m_Cantidad(0),
+      m_RutaImagen(""), m_Ancho(0.f),
+      m_Alto(0.f), m_IsRunning(true),
+      m_ListadoMegamans({})
+{}
 
 bool Game::Initialize()
 {
@@ -86,7 +80,6 @@ bool Game::Initialize()
     m_Ancho = std::get<2>(data);
     m_Alto = std::get<3>(data);
 
-
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         spdlog::error("Error initializing SDL. ");
@@ -94,11 +87,10 @@ bool Game::Initialize()
     }
 
     m_Window = SDL_CreateWindow(
-        nullptr, 
+        nullptr,
         800,
         600,
-        SDL_WINDOW_BORDERLESS
-    );
+        SDL_WINDOW_BORDERLESS);
 
     if (!m_Window)
     {
@@ -115,7 +107,7 @@ bool Game::Initialize()
 
     SDL_SetWindowFullscreen(m_Window, true);
 
-    SDL_Surface* megamanSurface = IMG_Load(m_RutaImagen.c_str());
+    SDL_Surface *megamanSurface = IMG_Load(m_RutaImagen.c_str());
     if (megamanSurface == nullptr)
     {
         spdlog::error("Error loading image.");
@@ -129,90 +121,90 @@ bool Game::Initialize()
 
 void Game::Run()
 {
-    auto listadoMegamans = SpawnearMegamans(
+    m_ListadoMegamans = SpawnearMegamans(
         m_Cantidad,
-        m_Texture, 
-        m_Ancho, 
-        m_Alto
-    );
+        m_Texture,
+        m_Ancho,
+        m_Alto);
 
-    bool isRunning = true;
     auto millisecsPreviousFrame = SDL_GetTicks();
-    while (isRunning)
+    while (m_IsRunning)
     {
-        // Getting Input data from player
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            switch (event.type)
-            {
-                case SDL_EVENT_QUIT:
-                    isRunning = false;
-                    break;
-                case SDL_EVENT_KEY_DOWN:
-                    if (!event.key.repeat &&
-                        event.key.key == SDLK_ESCAPE) 
-                    {
-                        isRunning = false;
-                    }
-                    break;
-            }
-        }
+        ProcessInput();
 
         double deltatime = (SDL_GetTicks() - millisecsPreviousFrame) / 1000.0;
 
-        // Updating
-        for (Megaman& m : listadoMegamans)
-        {
-            if (m.posX + m.velocidadX*deltatime < 0.f ||
-                m.posX + m.velocidadX*deltatime > 800.f)
-            {
-                m.velocidadX *= -1.f;
-            }
-            if (m.posY + m.velocidadY*deltatime < 0.f ||
-                m.posY + m.velocidadY*deltatime > 600.f)
-            {
-                m.velocidadY *= -1.f;
-            }
-            m.posX += m.velocidadX*deltatime;
-            m.posY += m.velocidadY*deltatime;
-            m.box.centerPosition.x += m.velocidadX*deltatime;
-            m.box.centerPosition.y += m.velocidadY*deltatime;
-        }
-
-        VerificarColisiones(listadoMegamans);
+        Update(deltatime);
 
         millisecsPreviousFrame = SDL_GetTicks();
 
-        // Renderer
-        SDL_SetRenderDrawColor(m_Renderer, 21, 21, 21, 255);
-        SDL_RenderClear(m_Renderer);
-
-        for (const Megaman& m : listadoMegamans)
-        {
-            SDL_FRect megamanRect = { 
-                m.posX, 
-                m.posY, 
-                m.box.anchoAlto.x, 
-                m.box.anchoAlto.y 
-            };
-            SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 255);
-            SDL_RenderRect(m_Renderer, &megamanRect);
-            SDL_RenderTexture(m_Renderer, m_Texture, nullptr, &megamanRect);
-        }
-
-        SDL_RenderPresent(m_Renderer);
+        Render();
     }
 }
 
 void Game::ProcessInput()
 {
+    // Getting Input data from player
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+        case SDL_EVENT_QUIT:
+            m_IsRunning = false;
+            break;
+        case SDL_EVENT_KEY_DOWN:
+            if (!event.key.repeat &&
+                event.key.key == SDLK_ESCAPE)
+            {
+                m_IsRunning = false;
+            }
+            break;
+        }
+    }
 }
 
-void Game::Update()
+void Game::Update(float deltatime)
 {
+    // Updating
+    for (Megaman &m : m_ListadoMegamans)
+    {
+        if (m.posX + m.velocidadX * deltatime < 0.f ||
+            m.posX + m.velocidadX * deltatime > 800.f)
+        {
+            m.velocidadX *= -1.f;
+        }
+        if (m.posY + m.velocidadY * deltatime < 0.f ||
+            m.posY + m.velocidadY * deltatime > 600.f)
+        {
+            m.velocidadY *= -1.f;
+        }
+        m.posX += m.velocidadX * deltatime;
+        m.posY += m.velocidadY * deltatime;
+        m.box.centerPosition.x += m.velocidadX * deltatime;
+        m.box.centerPosition.y += m.velocidadY * deltatime;
+    }
+
+    VerificarColisiones(m_ListadoMegamans);
 }
 
 void Game::Render()
 {
+    // Renderer
+    SDL_SetRenderDrawColor(m_Renderer, 21, 21, 21, 255);
+    SDL_RenderClear(m_Renderer);
+
+    for (const Megaman &m : m_ListadoMegamans)
+    {
+        SDL_FRect megamanRect = {
+            m.posX,
+            m.posY,
+            m.box.anchoAlto.x,
+            m.box.anchoAlto.y};
+        SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 255);
+        SDL_RenderRect(m_Renderer, &megamanRect);
+        SDL_RenderTexture(m_Renderer, m_Texture, nullptr, &megamanRect);
+    }
+
+    SDL_RenderPresent(m_Renderer);
 }
