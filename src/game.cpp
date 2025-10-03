@@ -35,6 +35,8 @@ std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture *textura, float 
 
 void VerificarColisiones(std::vector<Megaman> &listaMegamans)
 {
+    
+
     for (size_t i = 0; i < listaMegamans.size(); ++i)
     {
         Megaman &a = listaMegamans[i];

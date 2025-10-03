@@ -1,6 +1,8 @@
 #pragma once
 
+#include <glm/glm.hpp>
 #include <glm/vec2.hpp>
+
 
 namespace Fisicas {
     struct Forma {};
@@ -22,29 +24,27 @@ namespace Fisicas {
         Colision* m_Colision;
         public:
             GestorColisiones();
-            void SetColision(Colision colision);
-            bool Resolver(Forma forma1, Forma forma2);
+            void SetColision(Colision& colision);
+            bool Resolver(Forma& forma1, Forma& forma2);
     };
 
     class Colision
     {
         public:
-            virtual bool Resolver(Forma forma1, Forma forma2) = 0;
+            virtual bool Resolver(Forma& forma1, Forma& forma2) = 0;
     };
 
     class ColisionRectangular : public Colision
     {
         public:
-            bool Resolver(Forma forma1, Forma forma2) override;
+            bool Resolver(Forma& forma1, Forma& forma2) override;
     };
 
     class ColisionCircular : public Colision
     {
         public:
-            bool Resolver(Forma forma1, Forma forma2) override;
+            bool Resolver(Forma& forma1, Forma& forma2) override;
     };
-    
-    bool ColisionRectangular(const Rectangulo& r1, const Rectangulo& r2);
 }
 
 
