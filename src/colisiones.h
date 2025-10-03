@@ -5,27 +5,17 @@
 
 
 namespace Fisicas {
-    struct Forma {};
+    struct Forma {
+        glm::vec2 centerPosition;
+        glm::vec2 anchoAlto;
+    };
 
     struct Rectangulo : public Forma
-    {
-        glm::vec2 anchoAlto;
-        glm::vec2 centerPosition;
-    };
+    {};
 
     struct Circulo  : public Forma
     {
-        glm::vec2 centerPosition;
         float radio;
-    };
-
-    class GestorColisiones
-    {
-        Colision* m_Colision;
-        public:
-            GestorColisiones();
-            void SetColision(Colision& colision);
-            bool Resolver(Forma& forma1, Forma& forma2);
     };
 
     class Colision
@@ -45,6 +35,15 @@ namespace Fisicas {
         public:
             bool Resolver(Forma& forma1, Forma& forma2) override;
     };
+
+    class GestorColisiones
+    {
+        Colision* m_Colision;
+        public:
+            GestorColisiones();
+            void SetColision(Colision& colision);
+            bool Resolver(Forma& forma1, Forma& forma2);
+    };    
 }
 
 

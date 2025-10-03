@@ -17,14 +17,17 @@ std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture *textura, float 
         float y = randomPositionY(gen);
         float vx = randomVelocityX(gen);
         float vy = randomVelocityY(gen);
+        Fisicas::Rectangulo r;
+        //r.radio = 5.f;
+        r.anchoAlto = {ancho, alto};
+        r.centerPosition = {x + ancho / 2.f,
+              y + alto / 2.f};
         Megaman m = {
             x,
             y,
             vx,
             vy,
-            {{ancho, alto},
-             {x + ancho / 2.f,
-              y + alto / 2.f}},
+            r,
             textura};
         listadoMegamans.push_back(m);
         // listadoMegamans.emplace_back(x, y, vx, vy, textura);
@@ -35,7 +38,9 @@ std::vector<Megaman> SpawnearMegamans(int cantidad, SDL_Texture *textura, float 
 
 void VerificarColisiones(std::vector<Megaman> &listaMegamans)
 {
-    
+    Fisicas::GestorColisiones gestor;
+    Fisicas::ColisionRectangular colision;
+    gestor.SetColision(colision);
 
     for (size_t i = 0; i < listaMegamans.size(); ++i)
     {
@@ -49,7 +54,7 @@ void VerificarColisiones(std::vector<Megaman> &listaMegamans)
             //         a.box.centerPosition.x, a.box.centerPosition.y, b.box.centerPosition.x, b.box.centerPosition.y);
 
             
-            if (ColisionRectangular(a.box, b.box))
+            if (gestor.Resolver(a.box, b.box))
             {
                 a.velocidadX *= -1;
                 a.velocidadY *= -1;

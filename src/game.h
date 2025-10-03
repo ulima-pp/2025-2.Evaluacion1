@@ -16,7 +16,7 @@ struct Megaman
     float posY;
     float velocidadX;
     float velocidadY;
-    Rectangulo box;
+    Fisicas::Forma& box;
     SDL_Texture *textura;
 };
 
